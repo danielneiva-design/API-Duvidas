@@ -18,7 +18,9 @@ public class Duvida {
 
     @PrePersist
     private void definirDataHora() {
-    this.datahora = LocalDateTime.now();
+        if (this.datahora == null) {
+            this.datahora = LocalDateTime.now();
+        }
     }
 
     public Long getId() { return id; }
