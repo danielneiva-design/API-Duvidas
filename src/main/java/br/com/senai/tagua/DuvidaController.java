@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 @RestController
 public class DuvidaController {
 
@@ -25,7 +27,7 @@ public String alo() {
 }
 // CREATE
 @PostMapping("/duvidas")
-public Duvida criar(@RequestBody Duvida duvida) {
+public Duvida criar( @Valid @RequestBody Duvida duvida) {
     duvida.setId(null); // garante que será um INSERT
     return repository.save(duvida);
 }
@@ -45,7 +47,7 @@ public List<Duvida> listar() {
 
 // UPDATE
 @PutMapping("/duvidas/{id}")
-    public ResponseEntity<Duvida> atualizar(@PathVariable Long id, @RequestBody Duvida dados) {
+    public ResponseEntity<Duvida> atualizar(@PathVariable Long id,  @Valid @RequestBody Duvida dados) {
     return repository.findById(id)
             .map(duvida -> {
             duvida.setMensagem(dados.getMensagem());
