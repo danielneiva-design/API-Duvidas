@@ -8,14 +8,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-    // Lista de sites (origens) que podem chamar a API pelo navegador
+    // Padrões de sites que podem chamar a API pelo navegador (aceita curingas: http://localhost:*)
     @Value("${app.cors.origens}")
     private String[] origens;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins(origens)
+                .allowedOriginPatterns(origens)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*");
     }
