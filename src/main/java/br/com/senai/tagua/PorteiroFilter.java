@@ -30,11 +30,14 @@ public class PorteiroFilter extends OncePerRequestFilter {
 
         String metodo = pedido.getMethod();
 
-         // Liberados sem chave:
+        // Liberados sem chave:
         // - OPTIONS: a "pergunta prévia" do CORS
         // - GET /alo e GET /saude: usados pra ver se a API e o banco estão vivos
+        // - GET /swagger-ui/** e /v3/api-docs/**: a documentação (descreve a API, não dá acesso a nada)
         String endereco = pedido.getRequestURI();
-        boolean livre = metodo.equals("GET") && (endereco.equals("/alo") || endereco.equals("/saude"));
+        boolean livre = metodo.equals("GET") && (endereco.equals("/alo") ||
+                endereco.equals("/saude") || endereco.startsWith("/swagger-ui") ||
+                endereco.startsWith("/v3/api-docs"));
 
         if (metodo.equals("OPTIONS") || livre) {
             corrente.doFilter(pedido, resposta);

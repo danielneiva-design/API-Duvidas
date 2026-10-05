@@ -10,6 +10,8 @@ Ela pode ser usada por qualquer projeto: um console em Java, um site em HTML/JS,
 ```
 
 > **Endereço da API:** `https://api-duvidas.onrender.com`
+>
+> **Documentação interativa (Swagger):** <https://api-duvidas.onrender.com/swagger-ui.html>
 
 ---
 
@@ -20,11 +22,12 @@ Ela pode ser usada por qualquer projeto: um console em Java, um site em HTML/JS,
 3. [🍽️ O cardápio (endpoints)](#️-o-cardápio-endpoints)
 4. [📦 Como é uma dúvida](#-como-é-uma-dúvida)
 5. [🚦 Respostas e erros](#-respostas-e-erros)
-6. [🧪 Testando no Insomnia](#-testando-no-insomnia)
-7. [💻 Exemplos de código](#-exemplos-de-código)
-8. [🌐 CORS: chamando pelo navegador](#-cors-chamando-pelo-navegador)
-9. [🛟 Deu ruim? Problemas comuns](#-deu-ruim-problemas-comuns)
-10. [🛠️ Para quem mantém a API](#️-para-quem-mantém-a-api)
+6. [📖 Testando pelo navegador (Swagger)](#-testando-pelo-navegador-swagger)
+7. [🧪 Testando no Insomnia](#-testando-no-insomnia)
+8. [💻 Exemplos de código](#-exemplos-de-código)
+9. [🌐 CORS: chamando pelo navegador](#-cors-chamando-pelo-navegador)
+10. [🛟 Deu ruim? Problemas comuns](#-deu-ruim-problemas-comuns)
+11. [🛠️ Para quem mantém a API](#️-para-quem-mantém-a-api)
 
 ---
 
@@ -175,6 +178,29 @@ Os outros erros (401, 403, 404…) vêm assim:
   "path": "/duvidas"
 }
 ```
+
+---
+
+## 📖 Testando pelo navegador (Swagger)
+
+O jeito mais fácil de conhecer e testar a API, sem instalar nada:
+<https://api-duvidas.onrender.com/swagger-ui.html>
+
+O Swagger mostra **todos** os endpoints, o que cada um faz, as respostas possíveis (200, 400, 401…)
+e um exemplo de cada campo. E ele **gera a documentação a partir do código**: se a API mudar,
+a página muda junto.
+
+**Para testar um endpoint:**
+
+1. Clique em **🔒 Authorize** (no topo), cole a sua chave **sem aspas** e clique em **Authorize**.
+2. Abra um endpoint, por exemplo `GET /duvidas`, e clique em **Try it out**.
+3. Preencha o que for pedido (um `id`, ou o JSON da dúvida) e clique em **Execute**.
+4. Logo abaixo aparecem a resposta e o comando `curl` equivalente. 🎉
+
+> ⚠️ O Swagger chama a API **de verdade**: uma dúvida criada por ele aparece para a turma inteira.
+
+Quer a "planta" da API em JSON (formato **OpenAPI**), para gerar código ou importar no Insomnia?
+Está em <https://api-duvidas.onrender.com/v3/api-docs>.
 
 ---
 
@@ -401,6 +427,8 @@ Quem decide se o pedido é aceito continua sendo a **chave**.
 - **Java 25** + **Spring Boot 4** (Web MVC, Data JPA, Validation)
 - **TiDB Cloud Starter** (compatível com MySQL, plano gratuito): volta sozinho quando fica parado, sem precisar religar
 - Hospedagem no **Render**, com **Docker**
+- Documentação com **springdoc-openapi** (OpenAPI 3 + Swagger UI). As anotações `@Tag`, `@Operation`,
+  `@ApiResponse` e `@Schema` no código descrevem os endpoints e os campos.
 
 ### Como o código está organizado
 
@@ -412,6 +440,7 @@ Quem decide se o pedido é aceito continua sendo a **chave**.
 | `PorteiroFilter.java` | 🛂 confere a chave `X-API-Key` e as permissões (401/403) |
 | `TratadorDeErros.java` | transforma erros de validação em respostas 400 claras |
 | `CorsConfig.java` | 🌐 libera os sites da variável `CORS_ORIGENS` |
+| `DocumentacaoConfig.java` | 📖 nome, descrição e a chave `X-API-Key` no Swagger |
 | `Dockerfile` | 📦 a receita do container usado no Render |
 
 ### Variáveis de ambiente
