@@ -147,7 +147,8 @@ Todo pedido volta com um **código de status**. Ele diz o que aconteceu antes me
 
 | Código | Nome | Quer dizer | Exemplo |
 |---|---|---|---|
-| **200** | OK | deu certo, e a resposta traz dados | listou ou criou uma dúvida |
+| **200** | OK | deu certo, e a resposta traz dados | listou, buscou ou editou |
+| **201** | Created | **criou** algo novo. A resposta traz o que foi criado | registrou uma dúvida (`POST`) |
 | **204** | No Content | deu certo, sem nada para devolver | apagou uma dúvida |
 | **400** | Bad Request | **o seu pedido** está errado | mensagem vazia ou grande demais |
 | **401** | Unauthorized | "**identifique-se**": faltou a chave, ou ela está errada | esqueceu o header `X-API-Key` |
@@ -156,6 +157,13 @@ Todo pedido volta com um **código de status**. Ele diz o que aconteceu antes me
 | **500** | Internal Server Error | o problema foi **na API** | avise quem mantém a API! |
 
 💡 **Dica para decorar:** os códigos **4xx** são culpa de **quem pediu**, os **5xx** são culpa **do servidor**.
+
+> ⚠️ **Mudou em 05/10/2026:** registrar uma dúvida (`POST /duvidas`) agora responde **201**, e não mais 200.
+> Se o seu código testa `status === 200` depois de criar, troque por `resposta.ok` (JavaScript) ou
+> por "qualquer código entre 200 e 299" (Java). Assim ele aceita qualquer sucesso.
+
+O **201** também vem com o header **`Location`**, que diz o endereço da dúvida criada (por exemplo,
+`/duvidas/30005`). É a forma RESTful de dizer "criei, e ela mora aqui". 🏠
 
 ### O formato dos erros
 

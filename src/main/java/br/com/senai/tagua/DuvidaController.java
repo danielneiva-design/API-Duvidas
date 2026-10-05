@@ -1,5 +1,6 @@
 package br.com.senai.tagua;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -59,15 +60,20 @@ public class DuvidaController {
             description = "Chave ALUNO ou PROFESSOR. A mensagem é obrigatória (até 2000 caracteres). "
                     + "A datahora é opcional: se não vier, a API usa o horário de Brasília do momento.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Registrada. A resposta traz a dúvida com id e datahora."),
+            @ApiResponse(responseCode = "201", description = "Registrada. A resposta traz a dúvida com id e datahora, "
+                    + "e o header Location aponta para o endereço dela (/duvidas/{id})."),
             @ApiResponse(responseCode = "400", description = "Mensagem vazia ou com mais de 2000 caracteres. "
                     + "A lista \"erros\" da resposta explica o motivo."),
             @ApiResponse(responseCode = "401", description = "Faltou a chave, ou ela está errada.")
     })
     @PostMapping("/duvidas")
-    public Duvida criar(@Valid @RequestBody Duvida duvida) {
+    public ResponseEntity<Duvida> criar(@Valid @RequestBody Duvida duvida) {
         duvida.setId(null); // garante que será um INSERT
-        return repository.save(duvida);
+        Duvida salva = repository.save(duvida);
+
+        // 201 Created + Location: "criei, e ela mora neste endereço"
+        URI endereco = URI.create("/duvidas/" + salva.getId());
+        return ResponseEntity.created(endereco).body(salva);
     }
 
     @Operation(

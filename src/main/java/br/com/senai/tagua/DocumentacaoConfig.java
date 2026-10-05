@@ -18,8 +18,8 @@ public class DocumentacaoConfig {
     public OpenAPI documentacao() {
         return new OpenAPI()
                 .info(new Info()
-                        .title(/* nome da API */ "API de Dúvidas")
-                        .description(/* pra que ela serve */ "API para gerenciar dúvidas dos alunos")
+                        .title("API de Dúvidas")
+                        .description("API para gerenciar dúvidas dos alunos")
                         .version("1.0"))
                 // Como a API é protegida: uma chave no header X-API-Key
                 .components(new Components()
