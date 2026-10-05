@@ -5,7 +5,7 @@ Ela pode ser usada por qualquer projeto: um console em Java, um site em HTML/JS,
 
 ```
    Seu projeto  ──┐
-   Console Java ──┼──►  🌍 api-duvidas.onrender.com  ──►  🐬 MySQL na nuvem
+   Console Java ──┼──►  🌍 api-duvidas.onrender.com  ──►  🐯 TiDB (compatível com MySQL)
    App do prof. ──┘         🛂 chave · ✅ validação
 ```
 
@@ -15,7 +15,7 @@ Ela pode ser usada por qualquer projeto: um console em Java, um site em HTML/JS,
 
 ## 📚 Sumário
 
-1. [⚡ Antes de começar: a API "dorme"](#-antes-de-começar-a-api-dorme)
+1. [⚡ Antes de começar: a API está acordada?](#-antes-de-começar-a-api-está-acordada)
 2. [🔑 A chave de acesso](#-a-chave-de-acesso)
 3. [🍽️ O cardápio (endpoints)](#️-o-cardápio-endpoints)
 4. [📦 Como é uma dúvida](#-como-é-uma-dúvida)
@@ -28,16 +28,25 @@ Ela pode ser usada por qualquer projeto: um console em Java, um site em HTML/JS,
 
 ---
 
-## ⚡ Antes de começar: a API "dorme"
+## ⚡ Antes de começar: a API está acordada?
 
-A API roda em um plano **gratuito**. Depois de **15 minutos sem ninguém usar**, ela desliga para economizar.
-A **primeira chamada** depois disso acorda a API e pode levar **cerca de 1 minuto**. As seguintes são rápidas. 😴➡️😃
+A API roda em um plano **gratuito**, que desliga o servidor depois de **15 minutos sem ninguém usar**.
+Para isso não acontecer, um **despertador** ⏰ chama a API a cada 10 minutos. Então, normalmente,
+ela responde **na hora**.
 
-**No seu código:** mostre algo como *"Acordando a API, aguarde…"* e use um tempo de espera (timeout) longo
-na primeira chamada. Os [exemplos de código](#-exemplos-de-código) já fazem isso.
+Em casos raros (logo depois de uma atualização da API, por exemplo), a **primeira chamada** pode levar
+**cerca de 1 minuto**. As seguintes são rápidas. 😴➡️😃
 
-Quer saber se ela está acordada? Abra no navegador: <https://api-duvidas.onrender.com/alo>
-Se aparecer `Alô Mundo, Spring Boot!`, está tudo certo. ✅
+**No seu código:** use um tempo de espera (timeout) longo e mostre algo como *"Carregando…"*.
+Os [exemplos de código](#-exemplos-de-código) já fazem isso.
+
+**Quer conferir se está tudo no ar?** Abra no navegador: <https://api-duvidas.onrender.com/saude>
+
+```json
+{"status": "ok", "duvidas": 12}
+```
+
+Se aparecer isso, a API **e** o banco de dados estão funcionando. ✅
 
 ---
 
@@ -73,7 +82,8 @@ Existem **dois tipos de chave**:
 
 | Verbo | Endereço | O que faz | 🎓 ALUNO | 👨‍🏫 PROFESSOR |
 |---|---|---|:---:|:---:|
-| `GET` | `/alo` | diz se a API está viva (não precisa de chave) | ✅ | ✅ |
+| `GET` | `/saude` | diz se a API **e o banco** estão funcionando (não precisa de chave) | ✅ | ✅ |
+| `GET` | `/alo` | diz só se a API está ligada (não precisa de chave) | ✅ | ✅ |
 | `GET` | `/duvidas` | lista **todas** as dúvidas | ✅ | ✅ |
 | `GET` | `/duvidas/{id}` | busca **uma** dúvida pelo número | ✅ | ✅ |
 | `POST` | `/duvidas` | registra uma dúvida **nova** | ✅ | ✅ |
@@ -98,9 +108,13 @@ A API conversa em **JSON**. Uma dúvida salva é assim:
 
 | Campo | Tipo | Quem preenche | Regras |
 |---|---|---|---|
-| `id` | número | **a API** (automático) | não envie: a API ignora |
+| `id` | número | **a API** (automático) | não envie: a API ignora. É **único**, mas **não é sequencial** (veja abaixo) |
 | `mensagem` | texto | **você** | **obrigatória**, até **2000** caracteres |
 | `datahora` | texto (data e hora) | você **ou** a API | opcional. Se não enviar, a API usa o **horário de Brasília** do momento |
+
+> **Por que os `id` pulam?** Você pode ver uma dúvida 12 e a próxima ser a 30001. O banco (TiDB) roda
+> em vários servidores ao mesmo tempo, e cada um reserva um bloco de números para nunca repetir um `id`.
+> Então: use o `id` para **identificar** uma dúvida, mas não conte com "a próxima é a 13".
 
 ### Criando uma dúvida (`POST /duvidas`)
 
@@ -371,7 +385,7 @@ Quem decide se o pedido é aceito continua sendo a **chave**.
 
 | Sintoma | Causa provável | Solução |
 |---|---|---|
-| A primeira chamada demora ~1 minuto | a API estava **dormindo** 😴 | é normal, aguarde. As próximas são rápidas |
+| A primeira chamada demora ~1 minuto | a API estava **acordando** 😴 (raro: o despertador evita isso) | aguarde. Se acontecer sempre, confira o <https://api-duvidas.onrender.com/saude> e avise quem mantém a API |
 | **401** mesmo com a chave | chave com **aspas**, com espaço, incompleta, ou no header errado | o header é `X-API-Key`, e o valor vai **sem aspas** |
 | **403** | você usou a chave ALUNO para editar ou apagar | só a chave PROFESSOR faz isso |
 | **400** | a mensagem está vazia ou passou de 2000 caracteres | leia a lista `erros` da resposta |
@@ -385,7 +399,7 @@ Quem decide se o pedido é aceito continua sendo a **chave**.
 ### Tecnologias
 
 - **Java 25** + **Spring Boot 4** (Web MVC, Data JPA, Validation)
-- **MySQL** (Aiven, plano gratuito)
+- **TiDB Cloud Starter** (compatível com MySQL, plano gratuito): volta sozinho quando fica parado, sem precisar religar
 - Hospedagem no **Render**, com **Docker**
 
 ### Como o código está organizado
@@ -394,7 +408,7 @@ Quem decide se o pedido é aceito continua sendo a **chave**.
 |---|---|
 | `Duvida.java` | a entidade (vira a tabela `duvida`) e as regras de validação |
 | `DuvidaRepository.java` | o acesso ao banco (Spring Data JPA) |
-| `DuvidaController.java` | os endpoints `/duvidas` e `/alo` |
+| `DuvidaController.java` | os endpoints `/duvidas`, `/alo` e `/saude` |
 | `PorteiroFilter.java` | 🛂 confere a chave `X-API-Key` e as permissões (401/403) |
 | `TratadorDeErros.java` | transforma erros de validação em respostas 400 claras |
 | `CorsConfig.java` | 🌐 libera os sites da variável `CORS_ORIGENS` |
@@ -404,8 +418,8 @@ Quem decide se o pedido é aceito continua sendo a **chave**.
 
 | Variável | Para quê | Padrão (se não definir) |
 |---|---|---|
-| `DB_URL` | endereço JDBC do banco | `jdbc:mysql://localhost:3306/duvidasdb` |
-| `DB_USER` | usuário do banco | `root` |
+| `DB_URL` | endereço JDBC do banco. No TiDB: `jdbc:mysql://HOST:4000/duvidasdb?sslMode=VERIFY_IDENTITY` | `jdbc:mysql://localhost:3306/duvidasdb` |
+| `DB_USER` | usuário do banco. No TiDB ele tem um prefixo: `xxxx.root` | `root` |
 | `DB_PASSWORD` | senha do banco | **obrigatória** |
 | `DB_POOL_SIZE` | máximo de conexões com o banco | `5` |
 | `API_KEY_ALUNO` | chave de quem só lista e cria | **obrigatória** |
@@ -418,7 +432,8 @@ As variáveis **obrigatórias** não têm valor padrão **de propósito**: se fa
 
 ### Rodando no seu computador
 
-1. Tenha **Java 25** (ou mais novo) e um **MySQL** com um banco chamado `duvidasdb`.
+1. Tenha **Java 25** (ou mais novo) e um banco `duvidasdb`: um **MySQL** local ou o **TiDB**.
+   No TiDB, o seu IP precisa estar liberado (veja [Segurança do banco](#-segurança-do-banco)).
 2. Copie o `.env.example` para `.env` e preencha. O `.env` **não vai para o GitHub**.
    Para gerar chaves aleatórias: `openssl rand -hex 24`.
 3. Rode:
@@ -427,12 +442,37 @@ As variáveis **obrigatórias** não têm valor padrão **de propósito**: se fa
    ./mvnw spring-boot:run
    ```
 
-4. Teste: <http://localhost:8080/alo>
+4. Teste: <http://localhost:8080/saude>
 
 ### Publicação
 
 A cada `git push` na branch `main`, o **Render** monta o container a partir do `Dockerfile` e publica
 a nova versão sozinho. As senhas e chaves ficam **só** no painel do Render (Environment), nunca no código.
+
+O **Health Check Path** do Render é `/saude`: se o banco cair, o Render percebe.
+
+### ⏰ O despertador
+
+Um job no **cron-job.org** chama `GET /saude` **a cada 10 minutos**. Isso:
+
+- impede o Render de desligar a API (ele desliga depois de 15 minutos sem uso);
+- mantém o banco em uso;
+- avisa por e-mail se a resposta não for 200.
+
+### 🔐 Segurança do banco
+
+O TiDB só aceita conexões dos endereços cadastrados em **Settings → Networking → Authorized Networks**:
+
+| Regra | Para quê |
+|---|---|
+| as faixas de saída do Render (`render1`, `render2`) | a API no ar |
+| o IP de quem mantém a API | testes locais |
+
+A regra `Allow_all_public_connections` (liberar a internet inteira) **foi apagada de propósito**.
+
+- **Seu IP mudou** (outra rede, outro dia)? A API local não vai conectar. Clique em **Add Current IP** no TiDB.
+- **O Render mudou de região?** Os IPs de saída mudam junto. Copie os novos em **Render → Connect → Outbound**
+  e cadastre no TiDB. Um `/24` vira o intervalo `A.B.C.0` a `A.B.C.255`.
 
 ---
 
